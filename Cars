@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hossam Racing World 🏎️</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111; color: white; overflow: hidden; }
+        
+        /* شاشة اختيار اللغة */
+        #lang-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+        }
+
+        .btn {
+            padding: 15px 40px; margin: 10px; font-size: 20px; cursor: pointer;
+            border: 2px solid #00ffcc; background: transparent; color: white; border-radius: 50px; transition: 0.3s;
+        }
+
+        .btn:hover { background: #00ffcc; color: black; box-shadow: 0 0 20px #00ffcc; }
+
+        /* واجهة اللعبة */
+        #game-ui { display: none; padding: 20px; }
+        .stats { display: flex; justify-content: space-between; background: #222; padding: 15px; border-radius: 10px; border-bottom: 3px solid #00ffcc; }
+        
+        .world {
+            width: 100%; height: 300px; background: #333; margin-top: 20px;
+            border-radius: 15px; position: relative; border: 2px dashed #555;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .car-box { text-align: center; background: #2a2a2a; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .upgrade-btn { background: #ff9500; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .mission-btn { background: #00ffcc; color: black; border: none; padding: 15px 30px; border-radius: 5px; margin-top: 20px; font-weight: bold; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="lang-screen">
+        <h1 id="title">HOSSAM RACING</h1>
+        <div>
+            <button class="btn" onclick="setLang('en')">English</button>
+            <button class="btn" onclick="setLang('ar')">العربية</button>
+        </div>
+    </div>
+
+    <div id="game-ui">
+        <div class="stats">
+            <div id="ui-money">💰 $0</div>
+            <div id="ui-car">🚗 Car: Rusty Sedan</div>
+        </div>
+
+        <div class="world">
+            <p id="world-text">المدينة مفتوحة.. اذهب للمهمة القادمة!</p>
+        </div>
+
+        <div class="car-box">
+            <h3 id="garage-title">المرأب (Garage)</h3>
+            <p id="car-desc">الموتور: مستوى 1 | التيربو: لا يوجد</p>
+            <button class="upgrade-btn" onclick="upgrade('engine')">تطوير الموتور ($500)</button>
+            <button class="upgrade-btn" onclick="upgrade('turbo')">تركيب تيربو ($1000)</button>
+        </div>
+
+        <button class="mission-btn" onclick="doMission()" id="mission-text">بدء مهمة جديدة (+ $200)</button>
+    </div>
+
+    <script>
+        let money = 0;
+        let engineLevel = 1;
+        let hasTurbo = false;
+        let currentLang = 'ar';
+
+        const texts = {
+            ar: {
+                money: "💰 الرصيد: $",
+                car: "🚗 السيارة: سيدان قديمة",
+                mission: "بدء مهمة جديدة (+ $200)",
+                upgraded: "تم التطوير!",
+                noMoney: "الفلوس مش كفاية يا بطل!",
+                world: "العالم المفتوح جاهز للمغامرة!"
+            },
+            en: {
+                money: "💰 Money: $",
+                car: "🚗 Car: Rusty Sedan",
+                mission: "Start Mission (+ $200)",
+                upgraded: "Upgraded!",
+                noMoney: "Not enough money!",
+                world: "Open world ready for adventure!"
+            }
+        };
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('lang-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('ui-money').innerText = texts[currentLang].money + money;
+            document.getElementById('mission-text').innerText = texts[currentLang].mission;
+            document.getElementById('world-text').innerText = texts[currentLang].world;
+        }
+
+        function doMission() {
+            money += 200;
+            alert(currentLang === 'ar' ? "خلصت المهمة وأخدت 200 دولار!" : "Mission Complete! Earned $200");
+            updateUI();
+        }
+
+        function upgrade(type) {
+            if (type === 'engine' && money >= 500) {
+                money -= 500;
+                engineLevel++;
+                alert(texts[currentLang].upgraded);
+            } else if (type === 'turbo' && money >= 1000) {
+                money -= 1000;
+                hasTurbo = true;
+                alert(texts[currentLang].upgraded);
+            } else {
+                alert(texts[currentLang].noMoney);
+            }
+            updateUI();
+        }
+    </script>
+</body>
+</html>
