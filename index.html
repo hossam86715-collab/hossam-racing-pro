@@ -3,127 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hossam Racing World 🏎️</title>
+    <title>Hossam Racing: Open World 🏎️</title>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111; color: white; overflow: hidden; }
-        
-        /* شاشة اختيار اللغة */
-        #lang-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80');
-            background-size: cover; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
-        }
-
-        .btn {
-            padding: 15px 40px; margin: 10px; font-size: 20px; cursor: pointer;
-            border: 2px solid #00ffcc; background: transparent; color: white; border-radius: 50px; transition: 0.3s;
-        }
-
-        .btn:hover { background: #00ffcc; color: black; box-shadow: 0 0 20px #00ffcc; }
-
-        /* واجهة اللعبة */
-        #game-ui { display: none; padding: 20px; }
-        .stats { display: flex; justify-content: space-between; background: #222; padding: 15px; border-radius: 10px; border-bottom: 3px solid #00ffcc; }
-        
-        .world {
-            width: 100%; height: 300px; background: #333; margin-top: 20px;
-            border-radius: 15px; position: relative; border: 2px dashed #555;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        .car-box { text-align: center; background: #2a2a2a; padding: 20px; border-radius: 15px; margin-top: 20px; }
-        .upgrade-btn { background: #ff9500; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .mission-btn { background: #00ffcc; color: black; border: none; padding: 15px 30px; border-radius: 5px; margin-top: 20px; font-weight: bold; width: 100%; }
+        body { margin: 0; background: #0a0a0a; color: white; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; text-align: center; }
+        canvas { background: #1a1a1a; display: block; margin: 0 auto; border-left: 4px solid #333; border-right: 4px solid #333; box-shadow: 0 0 50px rgba(0,255,204,0.1); }
+        #lang-screen, #shop-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #shop-screen { display: none; }
+        .ui-panel { position: fixed; top: 10px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; }
+        .stat-box { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 10px; border: 1px solid #00ffcc; font-weight: bold; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; margin: 10px; background: #00ffcc; border: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }
+        button:hover { transform: scale(1.1); box-shadow: 0 0 20px #00ffcc; }
+        .shop-item { background: #222; padding: 20px; margin: 10px; border-radius: 15px; width: 250px; border: 1px solid #444; }
+        #shop-btn { position: fixed; bottom: 20px; right: 20px; z-index: 50; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="lang-screen">
-        <h1 id="title">HOSSAM RACING</h1>
-        <div>
-            <button class="btn" onclick="setLang('en')">English</button>
-            <button class="btn" onclick="setLang('ar')">العربية</button>
+<!-- شاشة اللغة -->
+<div id="lang-screen">
+    <h1 style="color: #00ffcc; font-size: 3rem;">HOSSAM RACING 🏎️</h1>
+    <p>Select Language / اختر اللغة</p>
+    <div>
+        <button onclick="initGame('ar')">العربية</button>
+        <button onclick="initGame('en')">English</button>
+    </div>
+</div>
+
+<!-- متجر التطويرات -->
+<div id="shop-screen">
+    <h2 id="shop-title">المتجر - Garage</h2>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+        <div class="shop-item">
+            <h3 id="engine-name">محرك V6</h3>
+            <p id="engine-desc">يزيد السرعة القصوى</p>
+            <button onclick="buyUpgrade('speed')">$500</button>
+        </div>
+        <div class="shop-item">
+            <h3 id="turbo-name">تيربو نيترو</h3>
+            <p id="turbo-desc">تسارع خارق</p>
+            <button onclick="buyUpgrade('turbo')">$1500</button>
         </div>
     </div>
+    <button style="background: #ff4444;" onclick="toggleShop()">إغلاق - Close</button>
+</div>
 
-    <div id="game-ui">
-        <div class="stats">
-            <div id="ui-money">💰 $0</div>
-            <div id="ui-car">🚗 Car: Rusty Sedan</div>
-        </div>
+<!-- واجهة اللعب -->
+<div class="ui-panel">
+    <div class="stat-box" id="money-display">💰 $0</div>
+    <div class="stat-box" id="dist-display">🛣️ 0 m</div>
+</div>
 
-        <div class="world">
-            <p id="world-text">المدينة مفتوحة.. اذهب للمهمة القادمة!</p>
-        </div>
+<button id="shop-btn" onclick="toggleShop()">🛒 Shop</button>
 
-        <div class="car-box">
-            <h3 id="garage-title">المرأب (Garage)</h3>
-            <p id="car-desc">الموتور: مستوى 1 | التيربو: لا يوجد</p>
-            <button class="upgrade-btn" onclick="upgrade('engine')">تطوير الموتور ($500)</button>
-            <button class="upgrade-btn" onclick="upgrade('turbo')">تركيب تيربو ($1000)</button>
-        </div>
+<canvas id="gameCanvas"></canvas>
 
-        <button class="mission-btn" onclick="doMission()" id="mission-text">بدء مهمة جديدة (+ $200)</button>
-    </div>
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 450;
+    canvas.height = window.innerHeight;
 
-    <script>
-        let money = 0;
-        let engineLevel = 1;
-        let hasTurbo = false;
-        let currentLang = 'ar';
+    let gameData = {
+        money: 0,
+        distance: 0,
+        speedLevel: 5,
+        hasTurbo: false,
+        lang: 'ar',
+        isPaused: false
+    };
 
-        const texts = {
-            ar: {
-                money: "💰 الرصيد: $",
-                car: "🚗 السيارة: سيدان قديمة",
-                mission: "بدء مهمة جديدة (+ $200)",
-                upgraded: "تم التطوير!",
-                noMoney: "الفلوس مش كفاية يا بطل!",
-                world: "العالم المفتوح جاهز للمغامرة!"
-            },
-            en: {
-                money: "💰 Money: $",
-                car: "🚗 Car: Rusty Sedan",
-                mission: "Start Mission (+ $200)",
-                upgraded: "Upgraded!",
-                noMoney: "Not enough money!",
-                world: "Open world ready for adventure!"
+    let car = { x: 200, y: canvas.height - 150, w: 50, h: 90, targetX: 200 };
+    let coins = [];
+    let roadLineY = 0;
+
+    const dictionary = {
+        ar: { shop: "المتجر", engine: "تطوير المحرك", turbo: "تركيب تيربو", money: "💰 $", dist: "🛣️ مسافة: " },
+        en: { shop: "Garage", engine: "Engine Upgrade", turbo: "Install Turbo", money: "💰 $", dist: "🛣️ Dist: " }
+    };
+
+    function initGame(l) {
+        gameData.lang = l;
+        document.getElementById("lang-screen").style.display = "none";
+        spawnCoin();
+        gameLoop();
+    }
+
+    function toggleShop() {
+        gameData.isPaused = !gameData.isPaused;
+        document.getElementById("shop-screen").style.display = gameData.isPaused ? "flex" : "none";
+    }
+
+    function spawnCoin() {
+        if (!gameData.isPaused) {
+            coins.push({ x: Math.random() * 300 + 75, y: -50 });
+        }
+        setTimeout(spawnCoin, 2000);
+    }
+
+    function buyUpgrade(type) {
+        if (type === 'speed' && gameData.money >= 500) {
+            gameData.money -= 500;
+            gameData.speedLevel += 2;
+            alert("Great! Speed Increased.");
+        } else if (type === 'turbo' && gameData.money >= 1500) {
+            gameData.money -= 1500;
+            gameData.hasTurbo = true;
+            alert("Turbo Active! Nitro Mode.");
+        } else {
+            alert("No Money! اعمل مهام أكتر.");
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById("money-display").innerText = dictionary[gameData.lang].money + gameData.money;
+        document.getElementById("dist-display").innerText = dictionary[gameData.lang].dist + Math.floor(gameData.distance) + "m";
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // رسم الطريق والخطوط المتحركة
+        ctx.fillStyle = "#222";
+        ctx.fillRect(50, 0, 350, canvas.height);
+        
+        ctx.strokeStyle = "white";
+        ctx.setLineDash([40, 40]);
+        ctx.lineDashOffset = -roadLineY;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.stroke();
+
+        // رسم العربية (تصميم رياضي)
+        ctx.fillStyle = gameData.hasTurbo ? "#00ffcc" : "#ff4444";
+        ctx.fillRect(car.x, car.y, car.w, car.h); // الجسم
+        ctx.fillStyle = "black";
+        ctx.fillRect(car.x-5, car.y+10, 10, 20); // عجل
+        ctx.fillRect(car.x+car.w-5, car.y+10, 10, 20);
+
+        // رسم العملات
+        ctx.fillStyle = "#ffd700";
+        coins.forEach(c => {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, 15, 0, Math.PI*2);
+            ctx.fill();
+        });
+    }
+
+    function update() {
+        if (gameData.isPaused) return;
+
+        roadLineY += gameData.speedLevel;
+        gameData.distance += gameData.speedLevel / 10;
+
+        // تحريك العربية بسلاسة
+        if (car.x < car.targetX) car.x += 8;
+        if (car.x > car.targetX) car.x -= 8;
+
+        coins.forEach((c, index) => {
+            c.y += gameData.speedLevel;
+            // التصادم مع العملة
+            if (c.y > car.y && c.y < car.y + car.h && c.x > car.x && c.x < car.x + car.w) {
+                gameData.money += 50;
+                coins.splice(index, 1);
+                updateUI();
             }
-        };
+        });
+        
+        if (coins.length > 10) coins.shift();
+    }
 
-        function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('lang-screen').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'block';
-            updateUI();
-        }
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && car.targetX > 100) car.targetX -= 100;
+        if (e.key === "ArrowRight" && car.targetX < 300) car.targetX += 100;
+    });
 
-        function updateUI() {
-            document.getElementById('ui-money').innerText = texts[currentLang].money + money;
-            document.getElementById('mission-text').innerText = texts[currentLang].mission;
-            document.getElementById('world-text').innerText = texts[currentLang].world;
-        }
+    // التحكم باللمس للموبايل (Infinix)
+    canvas.addEventListener("touchstart", (e) => {
+        let touchX = e.touches[0].clientX;
+        if (touchX < window.innerWidth/2) car.targetX = 100;
+        else car.targetX = 300;
+    });
 
-        function doMission() {
-            money += 200;
-            alert(currentLang === 'ar' ? "خلصت المهمة وأخدت 200 دولار!" : "Mission Complete! Earned $200");
-            updateUI();
-        }
-
-        function upgrade(type) {
-            if (type === 'engine' && money >= 500) {
-                money -= 500;
-                engineLevel++;
-                alert(texts[currentLang].upgraded);
-            } else if (type === 'turbo' && money >= 1000) {
-                money -= 1000;
-                hasTurbo = true;
-                alert(texts[currentLang].upgraded);
-            } else {
-                alert(texts[currentLang].noMoney);
-            }
-            updateUI();
-        }
-    </script>
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+</script>
 </body>
 </html>
